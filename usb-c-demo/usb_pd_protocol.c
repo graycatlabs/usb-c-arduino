@@ -117,7 +117,7 @@ static const uint8_t vdo_ver[] = {
 static int head;
 static int port = TASK_ID_TO_PD_PORT(task_get_current());
 static uint32_t payload[7];
-static int timeout = 10*MSEC;
+static int timeout = 10*MSEC_US;
 static int cc1, cc2;
 static int res, incoming_packet = 0;
 static int hard_reset_count = 0;
@@ -1607,7 +1607,7 @@ static uint64_t vdm_get_ready_timeout(uint32_t vdm_hdr)
 
 	/* its not a structured VDM command */
 	if (!PD_VDO_SVDM(vdm_hdr))
-		return 500*MSEC;
+		return 500*MSEC_US;
 
 	switch (PD_VDO_CMDT(vdm_hdr)) {
 	case CMDT_INIT:
@@ -1863,7 +1863,7 @@ static void pd_partner_port_reset(int port)
 #endif // CONFIG_BBRAM
 	/* Provide Rp for 100 msec. or until we no longer have VBUS. */
 	tcpm_set_cc(port, TYPEC_CC_RP);
-	timeout = get_time().val + 100 * MSEC;
+	timeout = get_time().val + 100 * MSEC_US;
 
 	while (get_time().val < timeout && pd_is_vbus_present(port))
 		msleep(10);
@@ -2213,13 +2213,13 @@ void pd_run_state_machine(int port)
 
 	/* if nothing to do, verify the state of the world in 500ms */
 	this_state = pd[port].task_state;
-	timeout = 500*MSEC;
+	timeout = 500*MSEC_US;
 	switch (this_state) {
 	case PD_STATE_DISABLED:
 		/* Nothing to do */
 		break;
 	case PD_STATE_SRC_DISCONNECTED:
-		timeout = 10*MSEC;
+		timeout = 10*MSEC_US;
 		tcpm_get_cc(port, &cc1, &cc2);
 #ifdef CONFIG_USB_PD_DUAL_ROLE_AUTO_TOGGLE
 		/*
@@ -2232,7 +2232,7 @@ void pd_run_state_machine(int port)
 			(cc1 == TYPEC_CC_VOLT_OPEN &&
 			    cc2 == TYPEC_CC_VOLT_OPEN)) {
 			set_state(port, PD_STATE_DRP_AUTO_TOGGLE);
-			timeout = 2*MSEC;
+			timeout = 2*MSEC_US;
 			break;
 		}
 #endif
@@ -2274,12 +2274,12 @@ void pd_run_state_machine(int port)
 				+ PD_T_TRY_WAIT;
 
 			/* Swap states quickly */
-			timeout = 2*MSEC;
+			timeout = 2*MSEC_US;
 		}
 #endif
 		break;
 	case PD_STATE_SRC_DISCONNECTED_DEBOUNCE:
-		timeout = 20*MSEC;
+		timeout = 20*MSEC_US;
 		tcpm_get_cc(port, &cc1, &cc2);
 
 		if (cc1 == TYPEC_CC_VOLT_RD &&
@@ -2297,7 +2297,7 @@ void pd_run_state_machine(int port)
 		} else {
 			/* No UFP */
 			set_state(port, PD_STATE_SRC_DISCONNECTED);
-			timeout = 5*MSEC;
+			timeout = 5*MSEC_US;
 			break;
 		}
 		/* If in Try.SRC state, then don't need to debounce */
@@ -2351,7 +2351,7 @@ void pd_run_state_machine(int port)
 			pd[port].flags |= PD_FLAGS_CHECK_PR_ROLE |
 						PD_FLAGS_CHECK_DR_ROLE;
 			hard_reset_count = 0;
-			timeout = 5*MSEC;
+			timeout = 5*MSEC_US;
 			set_state(port, PD_STATE_SRC_STARTUP);
 		}
 		/*
@@ -2362,12 +2362,12 @@ void pd_run_state_machine(int port)
 	case PD_STATE_SRC_HARD_RESET_RECOVER:
 		/* Do not continue until hard reset recovery time */
 		if (get_time().val < pd[port].src_recover) {
-			timeout = 50*MSEC;
+			timeout = 50*MSEC_US;
 			break;
 		}
 
 		/* Enable VBUS */
-		timeout = 10*MSEC;
+		timeout = 10*MSEC_US;
 		if (pd_set_power_supply_ready(port)) {
 			set_state(port, PD_STATE_SRC_DISCONNECTED);
 			break;
@@ -2437,7 +2437,7 @@ void pd_run_state_machine(int port)
 			if (res >= 0) {
 				set_state(port,
 						PD_STATE_SRC_NEGOCIATE);
-				timeout = 10*MSEC;
+				timeout = 10*MSEC_US;
 				hard_reset_count = 0;
 				caps_count = 0;
 				/* Port partner is PD capable */
@@ -2481,7 +2481,7 @@ void pd_run_state_machine(int port)
 		/* the voltage output is good, notify the source */
 		res = send_control(port, PD_CTRL_PS_RDY);
 		if (res >= 0) {
-			timeout = 10*MSEC;
+			timeout = 10*MSEC_US;
 			/* it'a time to ping regularly the sink */
 			set_state(port, PD_STATE_SRC_READY);
 		} else {
@@ -2563,7 +2563,7 @@ void pd_run_state_machine(int port)
 
 		/* Ping dropped. Try soft reset. */
 		set_state(port, PD_STATE_SOFT_RESET);
-		timeout = 10 * MSEC;
+		timeout = 10 * MSEC_US;
 		break;
 	case PD_STATE_SRC_GET_SINK_CAP:
 		if (pd[port].last_state != pd[port].task_state)
@@ -2576,7 +2576,7 @@ void pd_run_state_machine(int port)
 		if (pd[port].last_state != pd[port].task_state) {
 			res = send_control(port, PD_CTRL_DR_SWAP);
 			if (res < 0) {
-				timeout = 10*MSEC;
+				timeout = 10*MSEC_US;
 				/*
 					* If failed to get goodCRC, send
 					* soft reset, otherwise ignore
@@ -2599,7 +2599,7 @@ void pd_run_state_machine(int port)
 		if (pd[port].last_state != pd[port].task_state) {
 			res = send_control(port, PD_CTRL_PR_SWAP);
 			if (res < 0) {
-				timeout = 10*MSEC;
+				timeout = 10*MSEC_US;
 				/*
 					* If failed to get goodCRC, send
 					* soft reset, otherwise ignore
@@ -2641,7 +2641,7 @@ void pd_run_state_machine(int port)
 			/* Send PS_RDY */
 			res = send_control(port, PD_CTRL_PS_RDY);
 			if (res < 0) {
-				timeout = 10*MSEC;
+				timeout = 10*MSEC_US;
 				set_state(port,
 						PD_STATE_SRC_DISCONNECTED);
 				break;
@@ -2692,10 +2692,10 @@ void pd_run_state_machine(int port)
 	}
 	case PD_STATE_SNK_DISCONNECTED:
 #ifdef CONFIG_USB_PD_LOW_POWER
-		timeout = drp_state != PD_DRP_TOGGLE_ON ? SECOND
-							: 10*MSEC;
+		timeout = drp_state != PD_DRP_TOGGLE_ON ? SECOND_US
+							: 10*MSEC_US;
 #else
-		timeout = 10*MSEC;
+		timeout = 10*MSEC_US;
 #endif
 		tcpm_get_cc(port, &cc1, &cc2);
 
@@ -2710,7 +2710,7 @@ void pd_run_state_machine(int port)
 			(cc1 == TYPEC_CC_VOLT_OPEN &&
 			    cc2 == TYPEC_CC_VOLT_OPEN)) {
 			set_state(port, PD_STATE_DRP_AUTO_TOGGLE);
-			timeout = 2*MSEC;
+			timeout = 2*MSEC_US;
 			break;
 		}
 #endif
@@ -2725,7 +2725,7 @@ void pd_run_state_machine(int port)
 						PD_T_CC_DEBOUNCE;
 			set_state(port,
 				PD_STATE_SNK_DISCONNECTED_DEBOUNCE);
-			timeout = 10*MSEC;
+			timeout = 10*MSEC_US;
 			break;
 		}
 
@@ -2751,7 +2751,7 @@ void pd_run_state_machine(int port)
 			next_role_swap = get_time().val + PD_T_DRP_SRC;
 
 			/* Swap states quickly */
-			timeout = 2*MSEC;
+			timeout = 2*MSEC_US;
 		}
 		break;
 	case PD_STATE_SNK_DISCONNECTED_DEBOUNCE:
@@ -2765,11 +2765,11 @@ void pd_run_state_machine(int port)
 		} else {
 			/* No connection any more */
 			set_state(port, PD_STATE_SNK_DISCONNECTED);
-			timeout = 5*MSEC;
+			timeout = 5*MSEC_US;
 			break;
 		}
 
-		timeout = 20*MSEC;
+		timeout = 20*MSEC_US;
 
 		/* Debounce the cc state */
 		if (new_cc_state != pd[port].cc_state) {
@@ -2794,7 +2794,7 @@ void pd_run_state_machine(int port)
 			/* Swap roles to source */
 			pd[port].power_role = PD_ROLE_SOURCE;
 			tcpm_set_cc(port, TYPEC_CC_RP);
-			timeout = 2*MSEC;
+			timeout = 2*MSEC_US;
 			set_state(port, PD_STATE_SRC_DISCONNECTED);
 			/* Set flag after the state change */
 			pd[port].flags |= PD_FLAGS_TRY_SRC;
@@ -2829,7 +2829,7 @@ void pd_run_state_machine(int port)
 					PD_FLAGS_TS_DTS_PARTNER;
 			send_control(port, PD_CTRL_GET_SOURCE_CAP);
 			set_state(port, PD_STATE_SNK_DISCOVERY);
-			timeout = 10*MSEC;
+			timeout = 10*MSEC_US;
 			//hook_call_deferred(
 			//	&pd_usb_billboard_deferred_data,
 			//	PD_T_AME);
@@ -2886,7 +2886,7 @@ void pd_run_state_machine(int port)
 
 			/* VBUS went high again */
 			set_state(port, PD_STATE_SNK_DISCOVERY);
-			timeout = 10*MSEC;
+			timeout = 10*MSEC_US;
 		}
 
 		/*
@@ -2983,7 +2983,7 @@ void pd_run_state_machine(int port)
 						PD_STATE_HARD_RESET_SEND);
 		break;
 	case PD_STATE_SNK_READY:
-		timeout = 20*MSEC;
+		timeout = 20*MSEC_US;
 
 		/*
 			* Don't send any PD traffic if we woke up due to
@@ -3027,13 +3027,13 @@ void pd_run_state_machine(int port)
 		}
 
 		/* Sent all messages, don't need to wake very often */
-		timeout = 200*MSEC;
+		timeout = 200*MSEC_US;
 		break;
 	case PD_STATE_SNK_SWAP_INIT:
 		if (pd[port].last_state != pd[port].task_state) {
 			res = send_control(port, PD_CTRL_PR_SWAP);
 			if (res < 0) {
-				timeout = 10*MSEC;
+				timeout = 10*MSEC_US;
 				/*
 					* If failed to get goodCRC, send
 					* soft reset, otherwise ignore
@@ -3061,7 +3061,7 @@ void pd_run_state_machine(int port)
 		//			CHARGE_CEIL_NONE);
 #endif
 		set_state(port, PD_STATE_SNK_SWAP_SRC_DISABLE);
-		timeout = 10*MSEC;
+		timeout = 10*MSEC_US;
 		break;
 	case PD_STATE_SNK_SWAP_SRC_DISABLE:
 		/* Wait for PS_RDY */
@@ -3078,7 +3078,7 @@ void pd_run_state_machine(int port)
 			if (pd_set_power_supply_ready(port)) {
 				/* Restore Rd */
 				tcpm_set_cc(port, TYPEC_CC_RD);
-				timeout = 10*MSEC;
+				timeout = 10*MSEC_US;
 				set_state(port,
 						PD_STATE_SNK_DISCONNECTED);
 				break;
@@ -3098,7 +3098,7 @@ void pd_run_state_machine(int port)
 			/* Restore Rd */
 			tcpm_set_cc(port, TYPEC_CC_RD);
 			pd_power_supply_reset(port);
-			timeout = 10 * MSEC;
+			timeout = 10 * MSEC_US;
 			set_state(port, PD_STATE_SNK_DISCONNECTED);
 			break;
 		}
@@ -3110,14 +3110,14 @@ void pd_run_state_machine(int port)
 		pd[port].power_role = PD_ROLE_SOURCE;
 		pd_update_roles(port);
 		set_state(port, PD_STATE_SRC_DISCOVERY);
-		timeout = 10*MSEC;
+		timeout = 10*MSEC_US;
 		break;
 #ifdef CONFIG_USBC_VCONN_SWAP
 	case PD_STATE_VCONN_SWAP_SEND:
 		if (pd[port].last_state != pd[port].task_state) {
 			res = send_control(port, PD_CTRL_VCONN_SWAP);
 			if (res < 0) {
-				timeout = 10*MSEC;
+				timeout = 10*MSEC_US;
 				/*
 					* If failed to get goodCRC, send
 					* soft reset, otherwise ignore
@@ -3158,7 +3158,7 @@ void pd_run_state_machine(int port)
 				res = send_control(port,
 							PD_CTRL_PS_RDY);
 				if (res == -1) {
-					timeout = 10*MSEC;
+					timeout = 10*MSEC_US;
 					/*
 						* If failed to get goodCRC,
 						* send soft reset
@@ -3191,7 +3191,7 @@ void pd_run_state_machine(int port)
 			if (res < 0) {
 				set_state(port,
 						PD_STATE_HARD_RESET_SEND);
-				timeout = 5*MSEC;
+				timeout = 5*MSEC_US;
 				break;
 			}
 
@@ -3228,7 +3228,7 @@ void pd_run_state_machine(int port)
 		if (!hard_reset_sent) {
 			if (pd_transmit(port, TCPC_TX_HARD_RESET,
 					0, NULL) < 0) {
-				timeout = 10*MSEC;
+				timeout = 10*MSEC_US;
 				break;
 			}
 
@@ -3245,7 +3245,7 @@ void pd_run_state_machine(int port)
 			} else {
 				set_state(port,
 						PD_STATE_HARD_RESET_EXECUTE);
-				timeout = 10*MSEC;
+				timeout = 10*MSEC_US;
 			}
 		}
 		break;
@@ -3261,13 +3261,13 @@ void pd_run_state_machine(int port)
 
 		/* reset our own state machine */
 		pd_execute_hard_reset(port);
-		timeout = 10*MSEC;
+		timeout = 10*MSEC_US;
 		break;
 #ifdef CONFIG_COMMON_RUNTIME
 	case PD_STATE_BIST_RX:
 		send_bist_cmd(port);
 		/* Delay at least enough for partner to finish BIST */
-		timeout = PD_T_BIST_RECEIVE + 20*MSEC;
+		timeout = PD_T_BIST_RECEIVE + 20*MSEC_US;
 		/* Set to appropriate port disconnected state */
 		set_state(port, DUAL_ROLE_IF_ELSE(port,
 					PD_STATE_SNK_DISCONNECTED,
@@ -3276,7 +3276,7 @@ void pd_run_state_machine(int port)
 	case PD_STATE_BIST_TX:
 		pd_transmit(port, TCPC_TX_BIST_MODE_2, 0, NULL);
 		/* Delay at least enough to finish sending BIST */
-		timeout = PD_T_BIST_TRANSMIT + 20*MSEC;
+		timeout = PD_T_BIST_TRANSMIT + 20*MSEC_US;
 		/* Set to appropriate port disconnected state */
 		set_state(port, DUAL_ROLE_IF_ELSE(port,
 					PD_STATE_SNK_DISCONNECTED,
@@ -3324,11 +3324,11 @@ void pd_run_state_machine(int port)
 		if (next_state == PD_STATE_SNK_DISCONNECTED) {
 			tcpm_set_cc(port, TYPEC_CC_RD);
 			pd[port].power_role = PD_ROLE_SINK;
-			timeout = 2*MSEC;
+			timeout = 2*MSEC_US;
 		} else if (next_state == PD_STATE_SRC_DISCONNECTED) {
 			tcpm_set_cc(port, TYPEC_CC_RP);
 			pd[port].power_role = PD_ROLE_SOURCE;
-			timeout = 2*MSEC;
+			timeout = 2*MSEC_US;
 		} else {
 			tcpm_set_drp_toggle(port, 1);
 			pd[port].flags |= PD_FLAGS_TCPC_DRP_TOGGLE;
@@ -3357,7 +3357,7 @@ void pd_run_state_machine(int port)
 		if (now.val >= pd[port].timeout) {
 			set_state(port, pd[port].timeout_state);
 			/* On a state timeout, run next state soon */
-			timeout = timeout < 10*MSEC ? timeout : 10*MSEC;
+			timeout = timeout < 10*MSEC_US ? timeout : 10*MSEC_US;
 		} else if (pd[port].timeout - now.val < timeout) {
 			timeout = pd[port].timeout - now.val;
 		}
@@ -3378,7 +3378,7 @@ void pd_run_state_machine(int port)
 		if (cc1 == TYPEC_CC_VOLT_OPEN) {
 			set_state(port, PD_STATE_SRC_DISCONNECTED);
 			/* Debouncing */
-			timeout = 10*MSEC;
+			timeout = 10*MSEC_US;
 #ifdef CONFIG_USB_PD_DUAL_ROLE
 			/*
 				* If Try.SRC is configured, then ATTACHED_SRC
@@ -3413,7 +3413,7 @@ void pd_run_state_machine(int port)
 		/* Sink: detect disconnect by monitoring VBUS */
 		set_state(port, PD_STATE_SNK_DISCONNECTED);
 		/* set timeout small to reconnect fast */
-		timeout = 5*MSEC;
+		timeout = 5*MSEC_US;
 	}
 #endif /* CONFIG_USB_PD_DUAL_ROLE */
 }
@@ -3574,7 +3574,7 @@ static int remote_flashing(int argc, char **argv)
 
 	/* Wait until VDM is done */
 	while (pd[port].vdm_state > 0)
-		task_wait_event(100*MSEC);
+		task_wait_event(100*MSEC_US);
 
 	ccprintf("DONE %d\n", pd[port].vdm_state);
 	return EC_SUCCESS;
@@ -3615,12 +3615,12 @@ int pd_fetch_acc_log_entry(int port)
 				EC_RES_BUSY : EC_RES_UNAVAILABLE;
 
 	pd_send_vdm(port, USB_VID_GOOGLE, VDO_CMD_GET_LOG, NULL, 0);
-	timeout.val = get_time().val + 75*MSEC;
+	timeout.val = get_time().val + 75*MSEC_US;
 
 	/* Wait until VDM is done */
 	while ((pd[port].vdm_state > 0) &&
 	       (get_time().val < timeout.val))
-		task_wait_event(10*MSEC);
+		task_wait_event(10*MSEC_US);
 
 	if (pd[port].vdm_state > 0)
 		return EC_RES_TIMEOUT;
@@ -4065,7 +4065,7 @@ static int hc_remote_flash(struct host_cmd_handler_args *args)
 
 	case USB_PD_FW_ERASE_SIG:
 		pd_send_vdm(port, USB_VID_GOOGLE, VDO_CMD_ERASE_SIG, NULL, 0);
-		timeout.val = get_time().val + 500*MSEC;
+		timeout.val = get_time().val + 500*MSEC_US;
 		break;
 
 	case USB_PD_FW_FLASH_WRITE:
@@ -4077,12 +4077,12 @@ static int hc_remote_flash(struct host_cmd_handler_args *args)
 		for (i = 0; i < size; i += VDO_MAX_SIZE - 1) {
 			pd_send_vdm(port, USB_VID_GOOGLE, VDO_CMD_FLASH_WRITE,
 				    data + i, MIN(size - i, VDO_MAX_SIZE - 1));
-			timeout.val = get_time().val + 500*MSEC;
+			timeout.val = get_time().val + 500*MSEC_US;
 
 			/* Wait until VDM is done */
 			while ((pd[port].vdm_state > 0) &&
 			       (get_time().val < timeout.val))
-				task_wait_event(10*MSEC);
+				task_wait_event(10*MSEC_US);
 
 			if (pd[port].vdm_state > 0)
 				return EC_RES_TIMEOUT;
@@ -4096,7 +4096,7 @@ static int hc_remote_flash(struct host_cmd_handler_args *args)
 
 	/* Wait until VDM is done or timeout */
 	while ((pd[port].vdm_state > 0) && (get_time().val < timeout.val))
-		task_wait_event(50*MSEC);
+		task_wait_event(50*MSEC_US);
 
 	if ((pd[port].vdm_state > 0) ||
 	    (pd[port].vdm_state == VDM_STATE_ERR_TMOUT))

@@ -34,7 +34,7 @@ extern "C" {
 #define PD_RETRY_COUNT      3
 
 /* Time to wait for TCPC to complete transmit */
-#define PD_T_TCPC_TX_TIMEOUT  (100*MSEC)
+#define PD_T_TCPC_TX_TIMEOUT  (100*MSEC_US)
 
 #define TCPC_REG_DEVICE_ID  0x01
 

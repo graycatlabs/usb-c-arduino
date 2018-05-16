@@ -7,6 +7,7 @@
 
 #include "usb_pd_driver.h"
 #include "usb_pd.h"
+#include "Arduino.h"
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(t) (sizeof(t) / sizeof(t[0]))
@@ -58,13 +59,9 @@ int pd_snk_is_vbus_provided(int port)
 timestamp_t get_time(void)
 {
 	timestamp_t t;
-	
-	system_interrupt_enter_critical_section();
-	t.le.lo = tc_get_count_value(&tc_instance);
-	t.le.hi = g_us_timestamp_upper_32bit;
-	system_interrupt_leave_critical_section();
-	
-	return t;
+  t.val  = millis()*1000;
+  t.val += micros()%1000;
+  return t;
 }
 
 void pd_power_supply_reset(int port)
@@ -247,6 +244,3 @@ void pd_check_pr_role(int port, int pr_role, int flags)
 #endif // if 0
 }
 
-void pd_process_source_cap_callback(int port, int cnt, uint32_t *src_caps)
-{
-}

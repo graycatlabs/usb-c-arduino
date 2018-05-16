@@ -16,13 +16,13 @@ extern "C" {
 #endif
 
 /* Time units in microseconds */
-#define MSEC         (1000ul)
-#define SECOND    (1000000ul)
-#define MINUTE   (60000000ul)
-#define HOUR   (3600000000ull)  /* Too big to fit in a signed int */
+#define MSEC_US         (1000ul)
+#define SECOND_US    (1000000ul)
+#define MINUTE_US   (60000000ul)
+#define HOUR_US  (3600000000ull)  /* Too big to fit in a signed int */
 
 /* PD Host command timeout */
-#define PD_HOST_COMMAND_TIMEOUT_US SECOND
+#define PD_HOST_COMMAND_TIMEOUT_US SECOND_US
 
 #ifdef CONFIG_USB_PD_PORT_COUNT
 /*
@@ -148,51 +148,51 @@ enum pd_rx_errors {
 #define SVID_DISCOVERY_MAX 16
 
 /* Timers */
-#define PD_T_SINK_TX          (18*MSEC) /* between 16ms and 20 */
-#define PD_T_CHUNK_SENDER_RSP (24*MSEC) /* between 24ms and 30ms */
-#define PD_T_CHUNK_SENDER_REQ (24*MSEC) /* between 24ms and 30ms */
-#define PD_T_SEND_SOURCE_CAP  (100*MSEC) /* between 100ms and 200ms */
-#define PD_T_SINK_WAIT_CAP    (600*MSEC) /* between 310ms and 620ms */
-#define PD_T_SINK_TRANSITION   (35*MSEC) /* between 20ms and 35ms */
-#define PD_T_SOURCE_ACTIVITY   (45*MSEC) /* between 40ms and 50ms */
-//#define PD_T_SENDER_RESPONSE   (30*MSEC) /* between 24ms and 30ms */
-#define PD_T_SENDER_RESPONSE   (100*MSEC) /* between 24ms and 30ms */
-#define PD_T_PS_TRANSITION    (500*MSEC) /* between 450ms and 550ms */
-#define PD_T_PS_SOURCE_ON     (480*MSEC) /* between 390ms and 480ms */
-#define PD_T_PS_SOURCE_OFF    (920*MSEC) /* between 750ms and 920ms */
-#define PD_T_PS_HARD_RESET     (25*MSEC) /* between 25ms and 35ms */
-#define PD_T_ERROR_RECOVERY    (25*MSEC) /* 25ms */
-#define PD_T_CC_DEBOUNCE       (100*MSEC) /* between 100ms and 200ms */
+#define PD_T_SINK_TX          (18*MSEC_US) /* between 16ms and 20 */
+#define PD_T_CHUNK_SENDER_RSP (24*MSEC_US) /* between 24ms and 30ms */
+#define PD_T_CHUNK_SENDER_REQ (24*MSEC_US) /* between 24ms and 30ms */
+#define PD_T_SEND_SOURCE_CAP  (100*MSEC_US) /* between 100ms and 200ms */
+#define PD_T_SINK_WAIT_CAP    (600*MSEC_US) /* between 310ms and 620ms */
+#define PD_T_SINK_TRANSITION   (35*MSEC_US) /* between 20ms and 35ms */
+#define PD_T_SOURCE_ACTIVITY   (45*MSEC_US) /* between 40ms and 50ms */
+//#define PD_T_SENDER_RESPONSE   (30*MSEC_US) /* between 24ms and 30ms */
+#define PD_T_SENDER_RESPONSE   (100*MSEC_US) /* between 24ms and 30ms */
+#define PD_T_PS_TRANSITION    (500*MSEC_US) /* between 450ms and 550ms */
+#define PD_T_PS_SOURCE_ON     (480*MSEC_US) /* between 390ms and 480ms */
+#define PD_T_PS_SOURCE_OFF    (920*MSEC_US) /* between 750ms and 920ms */
+#define PD_T_PS_HARD_RESET     (25*MSEC_US) /* between 25ms and 35ms */
+#define PD_T_ERROR_RECOVERY    (25*MSEC_US) /* 25ms */
+#define PD_T_CC_DEBOUNCE       (100*MSEC_US) /* between 100ms and 200ms */
 /* DRP_SNK + DRP_SRC must be between 50ms and 100ms with 30%-70% duty cycle */
-#define PD_T_DRP_SNK           (40*MSEC) /* toggle time for sink DRP */
-#define PD_T_DRP_SRC           (30*MSEC) /* toggle time for source DRP */
-#define PD_T_DEBOUNCE          (15*MSEC) /* between 10ms and 20ms */
-#define PD_T_SINK_ADJ          (55*MSEC) /* between PD_T_DEBOUNCE and 60ms */
-#define PD_T_SRC_RECOVER      (760*MSEC) /* between 660ms and 1000ms */
-#define PD_T_SRC_RECOVER_MAX (1000*MSEC) /* 1000ms */
-#define PD_T_SRC_TURN_ON      (275*MSEC) /* 275ms */
-#define PD_T_SAFE_0V          (650*MSEC) /* 650ms */
-#define PD_T_NO_RESPONSE     (5500*MSEC) /* between 4.5s and 5.5s */
-#define PD_T_BIST_TRANSMIT     (50*MSEC) /* 50ms (used for task_wait arg) */
-#define PD_T_BIST_RECEIVE      (60*MSEC) /* 60ms (max time to process bist) */
-#define PD_T_VCONN_SOURCE_ON  (100*MSEC) /* 100ms */
-#define PD_T_TRY_SRC          (125*MSEC) /* Max time for Try.SRC state */
-#define PD_T_TRY_WAIT         (600*MSEC) /* Max time for TryWait.SNK state */
-#define PD_T_SINK_REQUEST     (100*MSEC) /* Wait 100ms before next request */
+#define PD_T_DRP_SNK           (40*MSEC_US) /* toggle time for sink DRP */
+#define PD_T_DRP_SRC           (30*MSEC_US) /* toggle time for source DRP */
+#define PD_T_DEBOUNCE          (15*MSEC_US) /* between 10ms and 20ms */
+#define PD_T_SINK_ADJ          (55*MSEC_US) /* between PD_T_DEBOUNCE and 60ms */
+#define PD_T_SRC_RECOVER      (760*MSEC_US) /* between 660ms and 1000ms */
+#define PD_T_SRC_RECOVER_MAX (1000*MSEC_US) /* 1000ms */
+#define PD_T_SRC_TURN_ON      (275*MSEC_US) /* 275ms */
+#define PD_T_SAFE_0V          (650*MSEC_US) /* 650ms */
+#define PD_T_NO_RESPONSE     (5500*MSEC_US) /* between 4.5s and 5.5s */
+#define PD_T_BIST_TRANSMIT     (50*MSEC_US) /* 50ms (used for task_wait arg) */
+#define PD_T_BIST_RECEIVE      (60*MSEC_US) /* 60ms (max time to process bist) */
+#define PD_T_VCONN_SOURCE_ON  (100*MSEC_US) /* 100ms */
+#define PD_T_TRY_SRC          (125*MSEC_US) /* Max time for Try.SRC state */
+#define PD_T_TRY_WAIT         (600*MSEC_US) /* Max time for TryWait.SNK state */
+#define PD_T_SINK_REQUEST     (100*MSEC_US) /* Wait 100ms before next request */
 
 /* number of edges and time window to detect CC line is not idle */
 #define PD_RX_TRANSITION_COUNT  3
 #define PD_RX_TRANSITION_WINDOW 20 /* between 12us and 20us */
 
 /* from USB Type-C Specification Table 5-1 */
-#define PD_T_AME (1*SECOND) /* timeout from UFP attach to Alt Mode Entry */
+#define PD_T_AME (1*SECOND_US) /* timeout from UFP attach to Alt Mode Entry */
 
 /* VDM Timers ( USB PD Spec Rev2.0 Table 6-30 )*/
-#define PD_T_VDM_BUSY         (100*MSEC) /* at least 100ms */
-#define PD_T_VDM_E_MODE        (25*MSEC) /* enter/exit the same max */
-#define PD_T_VDM_RCVR_RSP      (15*MSEC) /* max of 15ms */
-#define PD_T_VDM_SNDR_RSP      (30*MSEC) /* max of 30ms */
-#define PD_T_VDM_WAIT_MODE_E  (100*MSEC) /* enter/exit the same max */
+#define PD_T_VDM_BUSY         (100*MSEC_US) /* at least 100ms */
+#define PD_T_VDM_E_MODE        (25*MSEC_US) /* enter/exit the same max */
+#define PD_T_VDM_RCVR_RSP      (15*MSEC_US) /* max of 15ms */
+#define PD_T_VDM_SNDR_RSP      (30*MSEC_US) /* max of 30ms */
+#define PD_T_VDM_WAIT_MODE_E  (100*MSEC_US) /* enter/exit the same max */
 
 /* function table for entered mode */
 struct amode_fx {
@@ -580,7 +580,7 @@ struct pd_policy {
 #define PD_VDO_DPSTS_MF_PREF(x) (((x) >> 4) & 1)
 
 /* Per DisplayPort Spec v1.3 Section 3.3 */
-#define HPD_USTREAM_DEBOUNCE_LVL (2*MSEC)
+#define HPD_USTREAM_DEBOUNCE_LVL (2*MSEC_US)
 #define HPD_USTREAM_DEBOUNCE_IRQ (250)
 #define HPD_DSTREAM_DEBOUNCE_IRQ (500)  /* between 500-1000us */
 

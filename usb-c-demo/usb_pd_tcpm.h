@@ -88,7 +88,7 @@ enum ec_error_list {
 #define PD_RETRY_COUNT 3
 
 /* Time to wait for TCPC to complete transmit */
-#define PD_T_TCPC_TX_TIMEOUT  (100*MSEC)
+#define PD_T_TCPC_TX_TIMEOUT  (100*MSEC_US)
 
 enum tcpc_cc_voltage_status {
 	TYPEC_CC_VOLT_OPEN = 0,
