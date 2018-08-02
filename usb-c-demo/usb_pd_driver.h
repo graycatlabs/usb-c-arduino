@@ -47,10 +47,11 @@ extern "C" {
 #define PD_POWER_SUPPLY_TURN_OFF_DELAY 20000 /* us */
 
 /* Define typical operating power and max power */
-#define PD_OPERATING_POWER_MW 15000
-#define PD_MAX_POWER_MW       100000
-#define PD_MAX_CURRENT_MA     5000
-#define PD_MAX_VOLTAGE_MV     20000
+// Most Arduinos seem to be ok with 12 V, but have problems starting around 15 V. 
+#define PD_OPERATING_POWER_MW (2250ull)
+#define PD_MAX_POWER_MW       (60000ull)
+#define PD_MAX_CURRENT_MA     (5000ull)
+#define PD_MAX_VOLTAGE_MV     (12000ull)
 
 #define PDO_FIXED_FLAGS (PDO_FIXED_DUAL_ROLE | PDO_FIXED_DATA_SWAP |\
 PDO_FIXED_COMM_CAP)

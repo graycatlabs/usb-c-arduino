@@ -12,9 +12,6 @@ const struct tcpc_config_t tcpc_config[CONFIG_USB_PD_PORT_COUNT] = {
 // USB-C Specific - TCPM end 1
 
 void setup() {
-  //Serial.begin(115200);
-  //Serial.println("Hello!");
-
   pinMode(usb_pd_int_pin, INPUT);
   pinMode(debug_led_pin, OUTPUT);
   digitalWrite(debug_led_pin, LOW);
@@ -34,12 +31,13 @@ void loop() {
   }
   
   pd_run_state_machine(0);
+  // For some reason, a delay of 4 ms seems to be best
+  // My guess is that spamming the I2C bus too fast causes problems
   delay(4);
 }
 
 void pd_process_source_cap_callback(int port, int cnt, uint32_t *src_caps)
 {
   digitalWrite(debug_led_pin, HIGH);
-  delay(14);
 }
 
