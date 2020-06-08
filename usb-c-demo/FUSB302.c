@@ -418,6 +418,8 @@ static int fusb302_tcpm_init(int port)
 	tcpm_set_polarity(port, 0);
 	tcpm_set_vconn(port, 0);
 
+    fusb302_auto_goodcrc_enable(port, 0);
+
 	/* Turn on the power! */
 	/* TODO: Reduce power consumption */
 	tcpc_write(port, TCPC_REG_POWER, TCPC_REG_POWER_PWR_ALL);
@@ -790,7 +792,11 @@ static int fusb302_tcpm_transmit(int port, enum tcpm_transmit_type type,
 		buf[buf_pos++] = fusb302_TKN_SYNC1;
 		buf[buf_pos++] = fusb302_TKN_SYNC2;
 
-		return fusb302_send_message(port, header, data, buf, buf_pos);
+		fusb302_send_message(port, header, data, buf, buf_pos);
+	    // wait for the GoodCRC to come back before we let the rest
+	    // of the code do stuff like change polarity and miss it
+	    delayMicroseconds(1200);
+	    return 0;
 	case TCPC_TX_HARD_RESET:
 		/* Simply hit the SEND_HARD_RESET bit */
 		tcpc_read(port, TCPC_REG_CONTROL3, &reg);

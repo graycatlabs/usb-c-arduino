@@ -114,5 +114,7 @@ int tcpc_xfer(int port,
         in++;
     }
   }
+
+  return 0;
 }
 
