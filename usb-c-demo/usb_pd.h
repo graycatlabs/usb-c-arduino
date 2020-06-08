@@ -19,7 +19,7 @@ extern "C" {
 #define MSEC_US         (1000ul)
 #define SECOND_US    (1000000ul)
 #define MINUTE_US   (60000000ul)
-#define HOUR_US  (3600000000ull)  /* Too big to fit in a signed int */
+#define HOUR_US  (3600000000ul)  /* Too big to fit in a signed int */
 
 /* PD Host command timeout */
 #define PD_HOST_COMMAND_TIMEOUT_US SECOND_US
@@ -1652,7 +1652,7 @@ void pd_init(int port);
  * to iterate through the state machine. It uses get_time() to 
  * determine what actions to take each call. 
  */
-void pd_run_state_machine(int port);
+void pd_run_state_machine(int port, int reset);
 
 /* --- Protocol layer functions --- */
 

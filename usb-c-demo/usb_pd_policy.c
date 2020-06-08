@@ -81,7 +81,8 @@ int pd_find_pdo_index(int port, int max_mv, uint32_t *selected_pdo)
 	int cur_uw = 0;
 	int prefer_cur;
 	const uint32_t *src_caps = pd_src_caps[port];
-
+  extern int pd_source_cap_current_index;
+#if 0
 	/* max voltage is always limited by this boards max request */
 	max_mv = MIN(max_mv, PD_MAX_VOLTAGE_MV);
 
@@ -130,7 +131,10 @@ int pd_find_pdo_index(int port, int max_mv, uint32_t *selected_pdo)
 
 	if (selected_pdo)
 		*selected_pdo = src_caps[ret];
-
+#endif
+  if (selected_pdo)
+    *selected_pdo = src_caps[pd_source_cap_current_index];
+  
 	return ret;
 }
 
@@ -165,6 +169,7 @@ int pd_build_request(int port, uint32_t *rdo, uint32_t *ma, uint32_t *mv,
 	int uw;
 	int max_or_min_ma;
 	int max_or_min_mw;
+  extern int pd_source_cap_current_index;
 
 	if (req_type == PD_REQUEST_VSAFE5V) {
 		/* src cap 0 should be vSafe5V */
@@ -172,7 +177,9 @@ int pd_build_request(int port, uint32_t *rdo, uint32_t *ma, uint32_t *mv,
 		pdo = pd_src_caps[port][0];
 	} else {
 		/* find pdo index for max voltage we can request */
-		pdo_index = pd_find_pdo_index(port, max_request_mv, &pdo);
+		//pdo_index = pd_find_pdo_index(port, max_request_mv, &pdo);
+    pdo_index = pd_source_cap_current_index;
+    pdo = pd_src_caps[port][pd_source_cap_current_index];
 	}
 
 	pd_extract_pdo_power(pdo, ma, mv);

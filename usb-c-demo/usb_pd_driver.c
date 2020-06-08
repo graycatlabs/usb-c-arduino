@@ -28,17 +28,17 @@ uint32_t pd_task_set_event(uint32_t event, int wait_for_reply)
 	return 0;
 }
 
-const uint32_t pd_src_pdo[] = {
+const uint32_t PROGMEM pd_src_pdo[] = {
 	PDO_FIXED(5000, 1500, PDO_FIXED_FLAGS),
 };
-const int pd_src_pdo_cnt = ARRAY_SIZE(pd_src_pdo);
+const int PROGMEM pd_src_pdo_cnt = ARRAY_SIZE(pd_src_pdo);
 
-const uint32_t pd_snk_pdo[] = {
+const uint32_t PROGMEM pd_snk_pdo[] = {
 	PDO_FIXED(5000, 500, PDO_FIXED_FLAGS),
 	PDO_FIXED(9000, 500, PDO_FIXED_FLAGS),
 	PDO_FIXED(20000, 500, PDO_FIXED_FLAGS),
 };
-const int pd_snk_pdo_cnt = ARRAY_SIZE(pd_snk_pdo);
+const int PROGMEM pd_snk_pdo_cnt = ARRAY_SIZE(pd_snk_pdo);
 
 void pd_set_input_current_limit(int port, uint32_t max_ma,
 	uint32_t supply_voltage)
@@ -243,4 +243,3 @@ void pd_check_pr_role(int port, int pr_role, int flags)
 	}
 #endif // if 0
 }
-

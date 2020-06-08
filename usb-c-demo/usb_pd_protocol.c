@@ -65,17 +65,6 @@ static const int debug_level;
 #define PD_CAPS_COUNT 50
 #define PD_SNK_CAP_RETRIES 3
 
-enum vdm_states {
-	VDM_STATE_ERR_BUSY = -3,
-	VDM_STATE_ERR_SEND = -2,
-	VDM_STATE_ERR_TMOUT = -1,
-	VDM_STATE_DONE = 0,
-	/* Anything >0 represents an active state */
-	VDM_STATE_READY = 1,
-	VDM_STATE_BUSY = 2,
-	VDM_STATE_WAIT_RSP_BUSY = 3,
-};
-
 #ifdef CONFIG_USB_PD_DUAL_ROLE
 /* Port dual-role state */
 enum pd_dual_role_states drp_state = CONFIG_USB_PD_INITIAL_DRP_STATE;
@@ -140,74 +129,85 @@ static int caps_count = 0, hard_reset_sent = 0;
 static int snk_cap_count = 0;
 static int evt;
 
-static struct pd_protocol {
-	/* current port power role (SOURCE or SINK) */
-	uint8_t power_role;
-	/* current port data role (DFP or UFP) */
-	uint8_t data_role;
-	/* 3-bit rolling message ID counter */
-	uint8_t msg_id;
-	/* Port polarity : 0 => CC1 is CC line, 1 => CC2 is CC line */
-	uint8_t polarity;
-	/* PD state for port */
-	enum pd_states task_state;
-	/* PD state when we run state handler the last time */
-	enum pd_states last_state;
-	/* bool: request state change to SUSPENDED */
-	uint8_t req_suspend_state;
-	/* The state to go to after timeout */
-	enum pd_states timeout_state;
-	/* port flags, see PD_FLAGS_* */
-	uint32_t flags;
-	/* Timeout for the current state. Set to 0 for no timeout. */
-	uint64_t timeout;
-	/* Time for source recovery after hard reset */
-	uint64_t src_recover;
-	/* Time for CC debounce end */
-	uint64_t cc_debounce;
-	/* The cc state */
-	enum pd_cc_states cc_state;
-	/* status of last transmit */
-	uint8_t tx_status;
+enum vdm_states {
+  VDM_STATE_ERR_BUSY = -3,
+  VDM_STATE_ERR_SEND = -2,
+  VDM_STATE_ERR_TMOUT = -1,
+  VDM_STATE_DONE = 0,
+  /* Anything >0 represents an active state */
+  VDM_STATE_READY = 1,
+  VDM_STATE_BUSY = 2,
+  VDM_STATE_WAIT_RSP_BUSY = 3,
+};
 
-	/* last requested voltage PDO index */
-	int requested_idx;
+struct pd_protocol {
+  /* current port power role (SOURCE or SINK) */
+  uint8_t power_role;
+  /* current port data role (DFP or UFP) */
+  uint8_t data_role;
+  /* 3-bit rolling message ID counter */
+  uint8_t msg_id;
+  /* Port polarity : 0 => CC1 is CC line, 1 => CC2 is CC line */
+  uint8_t polarity;
+  /* PD state for port */
+  enum pd_states task_state;
+  /* PD state when we run state handler the last time */
+  enum pd_states last_state;
+  /* bool: request state change to SUSPENDED */
+  uint8_t req_suspend_state;
+  /* The state to go to after timeout */
+  enum pd_states timeout_state;
+  /* port flags, see PD_FLAGS_* */
+  uint32_t flags;
+  /* Timeout for the current state. Set to 0 for no timeout. */
+  uint64_t timeout;
+  /* Time for source recovery after hard reset */
+  uint64_t src_recover;
+  /* Time for CC debounce end */
+  uint64_t cc_debounce;
+  /* The cc state */
+  enum pd_cc_states cc_state;
+  /* status of last transmit */
+  uint8_t tx_status;
+
+  /* last requested voltage PDO index */
+  int requested_idx;
 #ifdef CONFIG_USB_PD_DUAL_ROLE
-	/* Current limit / voltage based on the last request message */
-	uint32_t curr_limit;
-	uint32_t supply_voltage;
-	/* Signal charging update that affects the port */
-	int new_power_request;
-	/* Store previously requested voltage request */
-	int prev_request_mv;
-	/* Time for Try.SRC states */
-	uint64_t try_src_marker;
+  /* Current limit / voltage based on the last request message */
+  uint32_t curr_limit;
+  uint32_t supply_voltage;
+  /* Signal charging update that affects the port */
+  int new_power_request;
+  /* Store previously requested voltage request */
+  int prev_request_mv;
+  /* Time for Try.SRC states */
+  uint64_t try_src_marker;
 #endif
 
-	/* PD state for Vendor Defined Messages */
-	enum vdm_states vdm_state;
-	/* Timeout for the current vdm state.  Set to 0 for no timeout. */
-	timestamp_t vdm_timeout;
-	/* next Vendor Defined Message to send */
-	uint32_t vdo_data[VDO_MAX_SIZE];
-	uint8_t vdo_count;
-	/* VDO to retry if UFP responder replied busy. */
-	uint32_t vdo_retry;
+  /* PD state for Vendor Defined Messages */
+  enum vdm_states vdm_state;
+  /* Timeout for the current vdm state.  Set to 0 for no timeout. */
+  timestamp_t vdm_timeout;
+  /* next Vendor Defined Message to send */
+  uint32_t vdo_data[VDO_MAX_SIZE];
+  uint8_t vdo_count;
+  /* VDO to retry if UFP responder replied busy. */
+  uint32_t vdo_retry;
 
 #ifdef CONFIG_USB_PD_CHROMEOS
-	/* Attached ChromeOS device id, RW hash, and current RO / RW image */
-	uint16_t dev_id;
-	uint32_t dev_rw_hash[PD_RW_HASH_SIZE/4];
-	enum ec_current_image current_image;
+  /* Attached ChromeOS device id, RW hash, and current RO / RW image */
+  uint16_t dev_id;
+  uint32_t dev_rw_hash[PD_RW_HASH_SIZE/4];
+  enum ec_current_image current_image;
 #endif
 #ifdef CONFIG_USB_PD_REV30
-	/* PD Collision avoidance buffer */
-	uint16_t ca_buffered;
-	uint16_t ca_header;
-	uint32_t ca_buffer[PDO_MAX_OBJECTS];
-	enum tcpm_transmit_type ca_type;
-	/* protocol revision */
-	uint8_t rev;
+  /* PD Collision avoidance buffer */
+  uint16_t ca_buffered;
+  uint16_t ca_header;
+  uint32_t ca_buffer[PDO_MAX_OBJECTS];
+  enum tcpm_transmit_type ca_type;
+  /* protocol revision */
+  uint8_t rev;
 #endif
 } pd[CONFIG_USB_PD_PORT_COUNT];
 
@@ -1106,10 +1106,14 @@ static void handle_data_request(int port, uint16_t head,
 			pd_update_pdo_flags(port, payload[0]);
 
 			pd_process_source_cap(port, cnt, payload);
-			pd_process_source_cap_callback(port, cnt, payload);
 
 			/* Source will resend source cap on failure */
 			pd_send_request_msg(port, 1);
+      
+      // We call the callback after we send the request
+      // because the timing on Request seems to be sensitive
+      // User code can take the time until PS_RDY to do stuff
+      pd_process_source_cap_callback(port, cnt, payload);
 		}
 		break;
 #endif /* CONFIG_USB_PD_DUAL_ROLE */
@@ -1547,11 +1551,11 @@ static void handle_request(int port, uint16_t head,
 	}
 
 	/*
-	 * If we are in disconnected state, we shouldn't get a request. Do
-	 * a hard reset if we get one.
+	 * If we are in disconnected state, we shouldn't get a request. 
+	 * Ignore it if we get one.
 	 */
 	if (!pd_is_connected(port))
-		set_state(port, PD_STATE_HARD_RESET_SEND);
+		return;
 
 #ifdef CONFIG_USB_PD_REV30
 	/* Check if this is an extended chunked data message. */
@@ -2125,8 +2129,12 @@ void pd_init(int port)
 #endif
 }
 
-void pd_run_state_machine(int port)
+void pd_run_state_machine(int port, int reset)
 {
+
+  if (reset)
+    pd[port].task_state = PD_STATE_SOFT_RESET;
+
 #ifdef CONFIG_USB_PD_REV30
 	/* send any pending messages */
 	pd_ca_send_pending(port);
